@@ -4,7 +4,7 @@
 	"description": "A dynamic virtual host proxy for Node",
 	"main": "lib/index.js",
 	"types": "types/index.d.ts",
-	"repository": "https://github.com:ExodiusStudios/node-vproxy.git",
+	"repository": "https://github.com/ExodiusStudios/sceptre.git",
 	"author": "Julian Mills <julian.exodius@gmail.com>",
 	"license": "ISC",
 	"keywords": [
