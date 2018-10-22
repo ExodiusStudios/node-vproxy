@@ -52,7 +52,7 @@ declare class Server {
     private buildMiddleware;
 }
 /**
- * Create a new VirtualRouter instance
+ * Create a new sceptre server instance
  *
  * @param config The configuration instance used to
  * configure the http server, proxy, or vproxy
