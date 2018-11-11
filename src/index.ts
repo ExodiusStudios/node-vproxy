@@ -145,6 +145,8 @@ export function createServer(records: ConnectionRecord|ConnectionRecord[], confi
 	}
 }
 
+export {HTTPRecord, HTTPSRecord};
+
 /**
  * Build a middleware stack with the given record array
  * 
