@@ -2,10 +2,6 @@
 # yarn lockfile v1
 
 
-"@exodius-studios/vhost@git+https://github.com/ExodiusStudios/vhost":
-  version "3.0.2"
-  resolved "git+https://github.com/ExodiusStudios/vhost#40c758407eef2b4224826e11cd48ecad623a85ae"
-
 "@types/connect@^3.4.32":
   version "3.4.32"
   resolved "https://registry.yarnpkg.com/@types/connect/-/connect-3.4.32.tgz#aa0e9616b9435ccad02bc52b5b454ffc2c70ba28"
@@ -131,3 +127,7 @@ unpipe@~1.0.0:
 utils-merge@1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/utils-merge/-/utils-merge-1.0.1.tgz#9f95710f50a267947b2ccc124741c1028427e713"
+
+"vhost@git+https://github.com/ExodiusStudios/vhost":
+  version "3.0.2"
+  resolved "git+https://github.com/ExodiusStudios/vhost#40c758407eef2b4224826e11cd48ecad623a85ae"
