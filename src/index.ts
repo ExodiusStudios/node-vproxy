@@ -64,9 +64,20 @@ export class Server {
 	 * @param callback Optional callback to run
 	 * @returns Callback promise
 	 */
-	public listen(config: ListenConfig, callback?: Function) : Promise<[void, void]> {
-		const http: Promise<void> = new Promise<void>(s => this.http.listen(config.port || 80, () => s()));
-		const http2: Promise<void> = this.https ? new Promise<void>(s => this.https!.listen(config.sslPort || 80, () => s())) : Promise.resolve();
+	public listen(config: ListenConfig|number, callback?: Function) : Promise<[void, void]> {
+		let port = 80;
+		let sslPort = 443;
+		
+		if(typeof config === 'number') {
+			port = config;
+		} else {
+			const con = config as ListenConfig;
+			port = con.port;
+			if(con.sslPort) sslPort = con.sslPort;
+		}
+
+		const http: Promise<void> = new Promise<void>(s => this.http.listen(port || 80, () => s()));
+		const http2: Promise<void> = this.https ? new Promise<void>(s => this.https!.listen(sslPort || 80, () => s())) : Promise.resolve();
 
 		if(callback) callback();
 		return Promise.all([http, http2])
@@ -79,15 +90,6 @@ export class Server {
 	 * @returns Callback promise
 	 */
 	public async close(callback?: Function) : Promise<[void, void, void]> {
-		let tasks = [
-			promisify(this.http.close)(),
-			promisify(this.proxy.close)(undefined)
-		];
-
-		if(this.https) {
-			tasks.push(promisify(this.https.close)());
-		}
-
 		const http: Promise<void> = new Promise<void>(s => this.http.close(() => s()));
 		const http2: Promise<void> = new Promise<void>(s => this.proxy.close(() => s()));
 		const http3: Promise<void> = this.https ? new Promise<void>(s => this.https!.close(() => s())) : Promise.resolve();
@@ -162,6 +164,8 @@ function buildMiddleware(records: ConnectionRecord[], proxy: httpProxy, onBuild?
 	// Append vhost proxies
 	records.forEach(record => {
 		app.use(vhost(record.match, (req: IncomingMessage, res: ServerResponse) => {
+			console.log(record.proxy)
+
 			proxy.web(req, res, {
 				...record.proxy,
 				target: record.proxy

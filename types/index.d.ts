@@ -30,7 +30,7 @@ export declare class Server {
      * @param callback Optional callback to run
      * @returns Callback promise
      */
-    listen(config: ListenConfig, callback?: Function): Promise<[void, void]>;
+    listen(config: ListenConfig | number, callback?: Function): Promise<[void, void]>;
     /**
      * Close the VirtualRouter instance and the underlying proxy server
      *
