@@ -1,11 +1,10 @@
-import { RoutingRecord } from "./routingRecord";
 import connect = require("connect");
 import { ProxyConfig } from "./proxyConfig";
 export interface Config {
     /** Configuration details for the proxy */
     proxy?: ProxyConfig;
-    /** A list of routing records used to control the proxy behavior */
-    routes: RoutingRecord[];
+    /** Specify whether you want to use HTTPS or not. Defaults to false */
+    https?: boolean;
     /** Inject additional middleware into the connect stack */
     onBuild?: (stack: connect.Server) => void;
 }

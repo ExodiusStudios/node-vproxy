@@ -1,48 +1,60 @@
 import http, { IncomingMessage, ServerResponse } from 'http';
-import https from 'http';
+import https from 'https';
 import httpProxy from 'http-proxy';
-import { RoutingRecord } from './routingRecord';
+import { HTTPRecord, HTTPSRecord } from './records';
 import connect from 'connect';
-import vhost from 'vhost';
+import { vhost } from 'vhost';
 import { Config } from './config';
 import { ListenConfig } from './listenConfig';
 import { promisify } from 'util';
+import { Credentials } from 'crypto';
+
+type ConnectionRecord = HTTPRecord|HTTPSRecord;
 
 /**
  * A sceptre proxy server that allows incoming connections to be
  * proxied to various endpoints, based on the hostname used to
  * connect.
  */
-class Server {
+export class Server {
 
 	/** The proxy used to forward requests */
 	private proxy: httpProxy;
 
 	/** The HTTP and HTTPS server used to listen to requests */
 	private http: http.Server
-	private https: https.Server
+	private https?: https.Server
 
-	/** The Connect middleware stack */
+	/* The record list & Connect middleware stack */
+	private records: ConnectionRecord[];
 	private stack: connect.Server;
 
-	/** Optional callback handlers */
+	/* Optional callback handlers */
 	private onBuild?: (stack: connect.Server) => void;
 
 	/**
 	 * Initialize a new Server instance.
 	 * 
+	 * @param records Array of HTTP or HTTPS records
 	 * @param config Server configuration
 	 */
-	constructor(config: Config) {
-		this.proxy = httpProxy.createProxyServer(config.proxy);
-		this.stack = this.buildMiddleware(config.routes || []);
+	constructor(records: ConnectionRecord[], config: Config) {
+		this.onBuild = config.onBuild;
+		this.proxy = httpProxy.createProxyServer(config && config.proxy);
+		this.stack = buildMiddleware(records || [], this.proxy, this.onBuild);
+		this.records = records;
 
 		// Manually hand off the request to the middleware stack
 		const handler = (req: IncomingMessage, res: ServerResponse) => this.stack(req, res);
 
 		// Create the HTTP and HTTPS server
 		this.http = http.createServer(handler);
-		this.https = https.createServer(handler);
+		
+		if(config.https) {
+			this.https = https.createServer({
+				SNICallback: (hostname) => resolveCertificate(this.records, hostname)
+			}, handler);
+		}
 	}
 
 	/**
@@ -53,11 +65,13 @@ class Server {
 	 * @returns Callback promise
 	 */
 	public async listen(config: ListenConfig, callback?: Function) : Promise<void> {
-		await Promise.all([
-			promisify(this.http.listen)(config.port || 80),
-			promisify(this.https.listen)(config.sslPort || 443)
-		]);
+		let tasks = [promisify(this.http.listen)(config.port || 80)];
 
+		if(this.https) {
+			tasks.push(promisify(this.https.listen)(config.sslPort || 443))
+		}
+
+		await Promise.all(tasks);
 		if(callback) callback();
 	}
 
@@ -68,11 +82,16 @@ class Server {
 	 * @returns Callback promise
 	 */
 	public async close(callback?: Function) : Promise<void> {
-		await Promise.all([
+		let tasks = [
 			promisify(this.http.close)(),
-			promisify(this.https.close)(),
 			promisify(this.proxy.close)(undefined)
-		]);
+		];
+
+		if(this.https) {
+			tasks.push(promisify(this.https.close)());
+		}
+
+		await Promise.all(tasks);
 
 		if(callback) callback();
 	}
@@ -83,32 +102,31 @@ class Server {
 	 * 
 	 * @param records New routing records
 	 */
-	public update(records: RoutingRecord[]) {
-		this.stack = this.buildMiddleware(records);
+	public setRecords(records: ConnectionRecord[]) {
+		this.stack = buildMiddleware(records, this.proxy, this.onBuild);
 	}
 
 	/**
-	 * Build a middleware stack with the given record array
+	 * Append a new HTTP or HTTPS record onto the stack
 	 * 
-	 * @param records Routing records to setup
+	 * @param record The record to append
 	 */
-	private buildMiddleware(records: RoutingRecord[]) : connect.Server {
-		const app = connect();
+	public addRecord(record: ConnectionRecord) {
+		this.records.push(record);
+		this.stack = buildMiddleware(this.records, this.proxy, this.onBuild);
+	}
 
-		if(this.onBuild) {
-			this.onBuild(app);
-		}
-
-		records.forEach(record => {
-			app.use(vhost(record.match, (req: IncomingMessage, res: ServerResponse) => {
-				this.proxy.web(req, res, {
-					...record.proxy,
-					target: record.proxy
-				});
-			}));
-		});
-
-		return app;
+	/**
+	 * Remove a HTTP or HTTPS record from the stack
+	 * 
+	 * @param record The record to remove
+	 */
+	public removeRecord(record: ConnectionRecord) : boolean {
+		let idx = this.records.indexOf(record);
+		if(idx < 0) return false;
+		this.records.splice(idx, 1);
+		this.stack = buildMiddleware(this.records, this.proxy, this.onBuild);
+		return true;
 	}
 
 }
@@ -119,6 +137,56 @@ class Server {
  * @param config The configuration instance used to
  * configure the http server, proxy, or vproxy
  */
-export function createServer(config: Config) : Server {
-	return new Server(config);
+export function createServer(records: ConnectionRecord|ConnectionRecord[], config?: Config) : Server {
+	if(Array.isArray(records)) {
+		return new Server(records, config || {});
+	} else {
+		return new Server([records], config || {});
+	}
+}
+
+/**
+ * Build a middleware stack with the given record array
+ * 
+ * @private
+ * @param records Routing records to setup
+ */
+function buildMiddleware(records: ConnectionRecord[], proxy: httpProxy, onBuild?: Function) : connect.Server {
+	const app = connect();
+
+	// Call the onBuild hook
+	if(onBuild) onBuild(app);
+
+	// Append vhost proxies
+	records.forEach(record => {
+		app.use(vhost(record.match, (req: IncomingMessage, res: ServerResponse) => {
+			proxy.web(req, res, {
+				...record.proxy,
+				target: record.proxy
+			});
+		}));
+	});
+
+	return app;
+}
+
+/**
+ * Resolve the credentials for the given hostname. Used by the SNI Callback.
+ * 
+ * @private
+ * @param hostname Requested hostname
+ */
+function resolveCertificate(records: ConnectionRecord[], hostname: string) : Credentials|undefined {
+	let ret;
+
+	records.forEach(record => {
+		if(!(record instanceof HTTPSRecord)) return;
+		
+		if(record.match.test(hostname)) {
+			ret = record.credentials;
+			return false;
+		}
+	});
+
+	return ret;
 }

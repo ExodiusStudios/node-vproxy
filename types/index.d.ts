@@ -1,27 +1,28 @@
-import { RoutingRecord } from './routingRecord';
+import { HTTPRecord, HTTPSRecord } from './records';
 import { Config } from './config';
 import { ListenConfig } from './listenConfig';
+declare type ConnectionRecord = HTTPRecord | HTTPSRecord;
 /**
  * A sceptre proxy server that allows incoming connections to be
  * proxied to various endpoints, based on the hostname used to
  * connect.
  */
-declare class Server {
+export declare class Server {
     /** The proxy used to forward requests */
     private proxy;
     /** The HTTP and HTTPS server used to listen to requests */
     private http;
-    private https;
-    /** The Connect middleware stack */
+    private https?;
+    private records;
     private stack;
-    /** Optional callback handlers */
     private onBuild?;
     /**
      * Initialize a new Server instance.
      *
+     * @param records Array of HTTP or HTTPS records
      * @param config Server configuration
      */
-    constructor(config: Config);
+    constructor(records: ConnectionRecord[], config: Config);
     /**
      * Listen on the specified ports for incoming connections.
      *
@@ -43,13 +44,19 @@ declare class Server {
      *
      * @param records New routing records
      */
-    update(records: RoutingRecord[]): void;
+    setRecords(records: ConnectionRecord[]): void;
     /**
-     * Build a middleware stack with the given record array
+     * Append a new HTTP or HTTPS record onto the stack
      *
-     * @param records Routing records to setup
+     * @param record The record to append
      */
-    private buildMiddleware;
+    addRecord(record: ConnectionRecord): void;
+    /**
+     * Remove a HTTP or HTTPS record from the stack
+     *
+     * @param record The record to remove
+     */
+    removeRecord(record: ConnectionRecord): boolean;
 }
 /**
  * Create a new sceptre server instance
@@ -57,5 +64,5 @@ declare class Server {
  * @param config The configuration instance used to
  * configure the http server, proxy, or vproxy
  */
-export declare function createServer(config: Config): Server;
+export declare function createServer(records: ConnectionRecord | ConnectionRecord[], config?: Config): Server;
 export {};

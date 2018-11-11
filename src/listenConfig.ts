@@ -1,3 +1,6 @@
+/**
+ * A config for specifying the ports to run on
+ */
 export interface ListenConfig {
 
 	/**

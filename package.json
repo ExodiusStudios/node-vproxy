@@ -2,7 +2,7 @@
 	"name": "sceptre",
 	"version": "1.0.1",
 	"description": "A dynamic virtual host proxy for Node",
-	"main": "lib/index.js",
+	"main": "index.js",
 	"types": "types/index.d.ts",
 	"repository": "https://github.com/ExodiusStudios/node-sceptre.git",
 	"author": "Julian Mills <julian.exodius@gmail.com>",
@@ -28,8 +28,10 @@
 		"typescript": "^3.1.3"
 	},
 	"dependencies": {
+		"@exodius-studios/vhost": "git+https://github.com/ExodiusStudios/vhost",
+		"@types/escape-string-regexp": "^1.0.0",
 		"connect": "^3.6.6",
-		"http-proxy": "^1.17.0",
-		"vhost": "^3.0.2"
+		"escape-string-regexp": "^1.0.5",
+		"http-proxy": "^1.17.0"
 	}
 }
