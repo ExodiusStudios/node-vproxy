@@ -64,15 +64,12 @@ export class Server {
 	 * @param callback Optional callback to run
 	 * @returns Callback promise
 	 */
-	public async listen(config: ListenConfig, callback?: Function) : Promise<void> {
-		let tasks = [promisify(this.http.listen)(config.port || 80)];
+	public listen(config: ListenConfig, callback?: Function) : Promise<[void, void]> {
+		const http: Promise<void> = new Promise<void>(s => this.http.listen(config.port || 80, () => s()));
+		const http2: Promise<void> = this.https ? new Promise<void>(s => this.https!.listen(config.sslPort || 80, () => s())) : Promise.resolve();
 
-		if(this.https) {
-			tasks.push(promisify(this.https.listen)(config.sslPort || 443))
-		}
-
-		await Promise.all(tasks);
 		if(callback) callback();
+		return Promise.all([http, http2])
 	}
 
 	/**
@@ -81,7 +78,7 @@ export class Server {
 	 * @param callback Optional callback to run
 	 * @returns Callback promise
 	 */
-	public async close(callback?: Function) : Promise<void> {
+	public async close(callback?: Function) : Promise<[void, void, void]> {
 		let tasks = [
 			promisify(this.http.close)(),
 			promisify(this.proxy.close)(undefined)
@@ -91,9 +88,12 @@ export class Server {
 			tasks.push(promisify(this.https.close)());
 		}
 
-		await Promise.all(tasks);
+		const http: Promise<void> = new Promise<void>(s => this.http.close(() => s()));
+		const http2: Promise<void> = new Promise<void>(s => this.proxy.close(() => s()));
+		const http3: Promise<void> = this.https ? new Promise<void>(s => this.https!.close(() => s())) : Promise.resolve();
 
 		if(callback) callback();
+		return Promise.all([http, http2, http3])
 	}
 
 	/**
