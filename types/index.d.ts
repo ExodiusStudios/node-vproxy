@@ -65,4 +65,4 @@ export declare class Server {
  * configure the http server, proxy, or vproxy
  */
 export declare function createServer(records: ConnectionRecord | ConnectionRecord[], config?: Config): Server;
-export {};
+export { HTTPRecord, HTTPSRecord };

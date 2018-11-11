@@ -1,5 +1,4 @@
-const {createServer, Server} = require('./lib/index');
-const {HTTPRecord, HTTPSRecord} = require('./lib/records');
+const {createServer, Server, HTTPRecord, HTTPSRecord} = require('./lib/index');
 
 module.exports = {
 	createServer,
