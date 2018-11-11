@@ -30,14 +30,14 @@ export declare class Server {
      * @param callback Optional callback to run
      * @returns Callback promise
      */
-    listen(config: ListenConfig, callback?: Function): Promise<void>;
+    listen(config: ListenConfig, callback?: Function): Promise<[void, void]>;
     /**
      * Close the VirtualRouter instance and the underlying proxy server
      *
      * @param callback Optional callback to run
      * @returns Callback promise
      */
-    close(callback?: Function): Promise<void>;
+    close(callback?: Function): Promise<[void, void, void]>;
     /**
      * Update the internal list of routing records. This will alter the behavior
      * of the proxy immediately.
