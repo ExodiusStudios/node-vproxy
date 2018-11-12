@@ -1,8 +1,7 @@
 import { ProxyConfig } from "./proxyConfig";
 import url from "url";
 import crypto, {Credentials, CredentialDetails} from 'crypto';
-import escape from 'escape-string-regexp';
-import { hostregexp } from "vhost";
+import { hostregexp } from "./vhost";
 
 type ProxyTargetUrl = string|url.Url;
 type ProxyMatch = string|RegExp;

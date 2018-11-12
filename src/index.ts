@@ -3,7 +3,7 @@ import https from 'https';
 import httpProxy from 'http-proxy';
 import { HTTPRecord, HTTPSRecord } from './records';
 import connect from 'connect';
-import { vhost } from 'vhost';
+import { vhost } from './vhost';
 import { Config } from './config';
 import { ListenConfig } from './listenConfig';
 import { promisify } from 'util';
