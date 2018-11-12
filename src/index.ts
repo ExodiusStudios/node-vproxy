@@ -44,6 +44,11 @@ export class Server {
 		this.stack = buildMiddleware(records || [], this.proxy, this.onBuild);
 		this.records = records;
 
+		// Call proxy handler
+		if(config.onProxy) {
+			config.onProxy(this.proxy);
+		}
+
 		// Manually hand off the request to the middleware stack
 		const handler = (req: IncomingMessage, res: ServerResponse) => this.stack(req, res);
 
@@ -164,11 +169,11 @@ function buildMiddleware(records: ConnectionRecord[], proxy: httpProxy, onBuild?
 	// Append vhost proxies
 	records.forEach(record => {
 		app.use(vhost(record.match, (req: IncomingMessage, res: ServerResponse) => {
-			console.log(record.proxy)
-
+			if(record.onRequest) record.onRequest(req, res);
+			
 			proxy.web(req, res, {
 				...record.proxy,
-				target: record.proxy
+				target: record.target
 			});
 		}));
 	});

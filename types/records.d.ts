@@ -12,6 +12,8 @@ export declare class HTTPSRecord {
     target?: ProxyTargetUrl;
     /** Configuration details for the proxy */
     proxy?: ProxyConfig;
+    /** Optional request handler */
+    onRequest?: Function;
     /** The hostname to match. Either a string or RegExp may be supplied */
     match: RegExp;
     /** Certificate credentials used for HTTPS verification */
@@ -24,7 +26,7 @@ export declare class HTTPSRecord {
      * @param cert The HTTPS certificate
      * @param proxy Optional proxy config
      */
-    constructor(match: ProxyMatch, target: ProxyTargetUrl, cert: CredentialDetails, proxy?: ProxyConfig);
+    constructor(match: ProxyMatch, target: ProxyTargetUrl, cert: CredentialDetails, proxy?: ProxyConfig, onRequest?: Function);
 }
 /**
  * A record representing a HTTP endpoint
@@ -34,6 +36,8 @@ export declare class HTTPRecord {
     target?: ProxyTargetUrl;
     /** Configuration details for the proxy */
     proxy?: ProxyConfig;
+    /** Optional request handler */
+    onRequest?: Function;
     /** The hostname to match. Either a string or RegExp may be supplied */
     match: RegExp;
     /**
@@ -43,6 +47,6 @@ export declare class HTTPRecord {
      * @param target The proxy target
      * @param proxy Optional proxy config
      */
-    constructor(match: ProxyMatch, target: ProxyTargetUrl, proxy?: ProxyConfig);
+    constructor(match: ProxyMatch, target: ProxyTargetUrl, proxy?: ProxyConfig, onRequest?: Function);
 }
 export {};

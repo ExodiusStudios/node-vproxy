@@ -18,6 +18,9 @@ export class HTTPSRecord {
 	/** Configuration details for the proxy */
 	public proxy?: ProxyConfig;
 
+	/** Optional request handler */
+	public onRequest?: Function;
+
 	/** The hostname to match. Either a string or RegExp may be supplied */
 	public match: RegExp;
 
@@ -32,10 +35,11 @@ export class HTTPSRecord {
 	 * @param cert The HTTPS certificate
 	 * @param proxy Optional proxy config
 	 */
-	public constructor(match: ProxyMatch, target: ProxyTargetUrl, cert: CredentialDetails, proxy?: ProxyConfig) {
+	public constructor(match: ProxyMatch, target: ProxyTargetUrl, cert: CredentialDetails, proxy?: ProxyConfig, onRequest?: Function) {
 		this.match = hostregexp(match);
 		this.target = target;
 		this.proxy = proxy;
+		this.onRequest = onRequest;
 		this.credentials = crypto.createCredentials(cert);
 	}
 
@@ -52,6 +56,9 @@ export class HTTPRecord {
 	/** Configuration details for the proxy */
 	public proxy?: ProxyConfig;
 
+	/** Optional request handler */
+	public onRequest?: Function;
+
 	/** The hostname to match. Either a string or RegExp may be supplied */
 	public match: RegExp;
 
@@ -62,10 +69,11 @@ export class HTTPRecord {
 	 * @param target The proxy target
 	 * @param proxy Optional proxy config
 	 */
-	public constructor(match: ProxyMatch, target: ProxyTargetUrl, proxy?: ProxyConfig) {
+	public constructor(match: ProxyMatch, target: ProxyTargetUrl, proxy?: ProxyConfig, onRequest?: Function) {
 		this.match = hostregexp(match);
 		this.target = target;
 		this.proxy = proxy;
+		this.onRequest = onRequest;
 	}
 
 }

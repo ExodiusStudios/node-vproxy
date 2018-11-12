@@ -1,4 +1,5 @@
 import connect = require("connect");
+import httpProxy from 'http-proxy';
 import { ProxyConfig } from "./proxyConfig";
 
 export interface Config {
@@ -11,4 +12,7 @@ export interface Config {
 
 	/** Inject additional middleware into the connect stack */
 	onBuild?: (stack: connect.Server) => void;
+
+	/** Inject additional logic into the proxy */
+	onProxy?: (proxy: httpProxy) => void;
 }
