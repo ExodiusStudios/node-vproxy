@@ -1,6 +1,6 @@
 {
 	"name": "sceptre",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"description": "A dynamic virtual host proxy for Node",
 	"main": "index.js",
 	"types": "types/index.d.ts",
