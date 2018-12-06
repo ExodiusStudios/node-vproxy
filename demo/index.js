@@ -2,12 +2,26 @@ const {createServer, HTTPRecord, HTTPSRecord} = require('../index');
 const http = require('http');
 
 const server = createServer([
+
 	new HTTPRecord("one.localhost", "http://localhost:8001", {}, (req, res) => {
-		console.log(req);
+		console.log(req.url);
 	}),
+
 	new HTTPRecord("*.localhost", "http://localhost:8002"),
+
 	new HTTPRecord("localhost", "http://localhost:8003")
-]);
+], {
+	onProxy: (proxy) => {
+
+		// Send a custom error page
+		proxy.on('error', (err, req, res) => {
+			res.writeHead(200, {'Content-Type': 'text/html'});
+			res.write('<b>Woops!</b> It looks like this site is currently offline');
+			res.end();
+		});
+
+	}
+});
 
 server.listen(80).then(() => {
 	console.log("Listening");
