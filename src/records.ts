@@ -1,6 +1,7 @@
 import { ProxyConfig } from "./proxyConfig";
 import url from "url";
 import {createCredentials, Credentials, CredentialDetails} from 'crypto';
+import {createSecureContext} from 'tls';
 import { hostregexp } from "./vhost";
 
 type ProxyTargetUrl = string|url.Url;
@@ -39,7 +40,7 @@ export class HTTPSRecord {
 		this.target = target;
 		this.proxy = proxy;
 		this.onRequest = onRequest;
-		this.credentials = createCredentials(cert);
+		this.credentials = createCredentials ? createCredentials(cert) : createSecureContext(cert);
 	}
 
 }
