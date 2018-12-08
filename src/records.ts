@@ -1,6 +1,6 @@
 import { ProxyConfig } from "./proxyConfig";
 import url from "url";
-import crypto, {Credentials, CredentialDetails} from 'crypto';
+import {createCredentials, Credentials, CredentialDetails} from 'crypto';
 import { hostregexp } from "./vhost";
 
 type ProxyTargetUrl = string|url.Url;
@@ -39,7 +39,7 @@ export class HTTPSRecord {
 		this.target = target;
 		this.proxy = proxy;
 		this.onRequest = onRequest;
-		this.credentials = crypto.createCredentials(cert);
+		this.credentials = createCredentials(cert);
 	}
 
 }

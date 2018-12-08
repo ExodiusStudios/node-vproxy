@@ -16,16 +16,3 @@ export interface Config {
 	/** Inject additional logic into the proxy */
 	onProxy?: (proxy: httpProxy) => void;
 }
-
-// TODO: Test
-// FIXME: BUG
-// SECTION: Testing
-// FIXME: This should appear
-// SECTION: Testing
-// FIXME: This should appear
-// SECTION: Testing
-// FIXME: This should appear
-// !SECTION: Boo
-// !SECTION: Boo
-// !SECTION: Boo
-// FIXME: Test
